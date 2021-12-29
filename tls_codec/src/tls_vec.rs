@@ -46,27 +46,29 @@ macro_rules! impl_byte_deserialize {
             // When fuzzing we limit the maximum size to allocate.
             // XXX: We should think about a configurable limit for the allocation
             //      here.
-            if cfg!(fuzzing) && len > u16::MAX as usize {
+            #[cfg(fuzzing)]
+            if len > u16::MAX as usize {
                 return Err(Error::DecodingError(format!(
                     "Trying to allocate {} bytes. Only {} allowed.",
                     len,
                     u16::MAX
                 )));
             }
+
             let mut result = Self {
                 vec: vec![0u8; len],
             };
             let read = bytes.read(result.vec.as_mut_slice())?;
             if read != len {
-                if !cfg!(fuzzing) {
-                    // When fuzzing we don't want to assert here because it would
-                    // crash all the time. Throwing an error is sufficient.
-                    debug_assert_eq!(
-                        read, len,
-                        "Expected to read {} bytes but {} were read.",
-                        len, read
-                    );
-                }
+                #[cfg(fuzzing)]
+                // When fuzzing we don't want to assert here because it would
+                // crash all the time. Throwing an error is sufficient.
+                debug_assert_eq!(
+                    read, len,
+                    "Expected to read {} bytes but {} were read.",
+                    len, read
+                );
+
                 Err(Error::DecodingError(format!(
                     "{} bytes were read but {} were expected",
                     read, len
