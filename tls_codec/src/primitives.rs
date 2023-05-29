@@ -63,7 +63,7 @@ impl<T: Deserialize> Deserialize for Option<T> {
                 let element = T::tls_deserialize(bytes)?;
                 Ok(Some(element))
             },
-            _ => Err(Error::DecodingError(format!("Trying to decode Option<T> with {} for option. It must be 0 for None and 1 for Some.", some_or_none[0])))
+            _ => Err(Error::DecodingError(format!("Trying to decode Option<{}> with {} for option. It must be 0 for None and 1 for Some.", std::any::type_name::<T>(), some_or_none[0])))
         }
     }
 }
